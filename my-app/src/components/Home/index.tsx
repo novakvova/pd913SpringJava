@@ -9,25 +9,39 @@ const HomePage : React.FC = () => {
     const imgRef = React.useRef<HTMLImageElement>(null);
     const prevRef = React.useRef<HTMLImageElement>(null);
     const [cropperObj, setCropperObj] = React.useState<Cropper>();
+    const [imageView, setImageView] = React.useState<string>("https://www.securityindustry.org/wp-content/uploads/sites/3/2018/05/noimage.png");
 
 
     // React.useEffect(()=>{
         
     // },[]);
-    const showModal = async () => {
-      await setIsModalVisible(true);
-      console.log("Image ref ", imgRef);
-      const cropper = new Cropper(imgRef.current as HTMLImageElement, {
-        aspectRatio: 16/9,  
-        viewMode: 1,
-        preview: prevRef.current as HTMLImageElement
-      });
-      setCropperObj(cropper);
+
+    //вибір файла
+    const handleChangeFile = async (e: any) => {
+      const file = (e.target.files as FileList)[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+
+        await setIsModalVisible(true);
+        console.log("Image ref ", imgRef);
+        let cropper = cropperObj;
+        if (!cropper) {
+          cropper = new Cropper(imgRef.current as HTMLImageElement, {
+            aspectRatio: 1 / 1,
+            viewMode: 1,
+            preview: prevRef.current as HTMLImageElement,
+          });
+        }
+        cropper.replace(url);
+        // e.target.files=null;
+        setCropperObj(cropper);
+      }
     };
   
     const handleOk = () => {
         const base64 = cropperObj?.getCroppedCanvas().toDataURL() as string;
         console.log("Cropper data: ", base64);
+        setImageView(base64);
       setIsModalVisible(false);
     };
   
@@ -37,9 +51,17 @@ const HomePage : React.FC = () => {
     return (
       <>
         <h1>Головна сторінка</h1>
-        <Button type="primary" onClick={showModal}>
-          Button
-        </Button>
+
+        <input
+          id="uploadimg"
+          className="d-none"
+          type="file"
+          onChange={handleChangeFile}
+        />
+
+        <img src={imageView} alt="" width="250" />
+
+
 
         <Modal
           title="Basic Modal"
