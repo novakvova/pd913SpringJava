@@ -6,4 +6,5 @@ import lombok.Data;
 public class CreateDoctorDto {
     private String name;
     private String phone;
+    private String photo;
 }

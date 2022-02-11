@@ -33,7 +33,7 @@ const HomePage : React.FC = () => {
           });
         }
         cropper.replace(url);
-        // e.target.files=null;
+        e.target.value="";
         setCropperObj(cropper);
       }
     };
