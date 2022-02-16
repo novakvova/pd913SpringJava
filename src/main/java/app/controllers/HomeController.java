@@ -1,19 +1,23 @@
 package app.controllers;
 
 import app.dto.CreateDoctorDto;
+import app.dto.UploadImageDto;
 import app.entities.Doctor;
 import app.mapper.DoctorMapper;
 import app.repositories.DoctorRepository;
 import app.storage.StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileOutputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 
@@ -31,16 +35,28 @@ public class HomeController {
 
     @PostMapping("/create")
     public Doctor index(CreateDoctorDto dto) throws Exception {
-
-        String [] charArray = dto.getPhoto().split(",");
-        Base64.Decoder decoder = Base64.getDecoder();
-        byte[] bytes = new byte[0];
-        bytes = decoder.decode(charArray[1]);
-        String directory= "uploaded/"+"app.jpg"; //servletContext.getRealPath("/")+"images/sample.jpg";
-
-        new FileOutputStream(directory).write(bytes);
+        String fileName = storageService.store(dto.getPhoto());
         Doctor doctor = doctorMapper.CreateDoctorToDoctor(dto);
         doctorRepository.save(doctor);
         return doctor;
     }
+    @PostMapping("/upload")
+    public String upload(@RequestBody UploadImageDto dto) {
+        String fileName = storageService.store(dto.getBase64());
+        return fileName;
+    }
+    @GetMapping("/files/{filename:.+}")
+    @ResponseBody
+    public ResponseEntity<Resource> serveFile(@PathVariable String filename) throws Exception {
+
+        Resource file = storageService.loadAsResource(filename);
+        String urlFileName =  URLEncoder.encode("сало.jpg", StandardCharsets.UTF_8.toString());
+        return ResponseEntity.ok()
+                //.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"").body(file);
+                .contentType(MediaType.IMAGE_JPEG)
+
+                .header(HttpHeaders.CONTENT_DISPOSITION,"filename=\""+urlFileName+"\"")
+                .body(file);
+    }
+
 }

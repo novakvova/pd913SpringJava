@@ -1,7 +1,6 @@
 package app.storage;
 
 
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -15,6 +14,8 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @Service
@@ -62,16 +63,19 @@ public class FileSystemStorageService implements StorageService {
             if (base64.isEmpty()) {
                 throw new StorageException("Failed to store empty base64 ");
             }
-            byte[] imageByte= Base64.decodeBase64(base64);
+            UUID uuid = UUID.randomUUID();
+            String randomFileName = uuid.toString()+".jpg";
+            String [] charArray = base64.split(",");
+            java.util.Base64.Decoder decoder = Base64.getDecoder();
+            byte[] bytes = new byte[0];
+            bytes = decoder.decode(charArray[1]);
+            String directory= rootLocation.toString()+"/"+randomFileName; //servletContext.getRealPath("/")+"images/sample.jpg";
 
-            String directory= rootLocation+"/"+"app.jpg"; //servletContext.getRealPath("/")+"images/sample.jpg";
-
-            new FileOutputStream(directory).write(imageByte);
-            //Files.copy(file.getInputStream(), this.rootLocation.resolve(file.getOriginalFilename()));
+            new FileOutputStream(directory).write(bytes);
+            return randomFileName;
         } catch (IOException e) {
             throw new StorageException("Failed to store file ", e);
         }
-        return null;
     }
 
     @Override
