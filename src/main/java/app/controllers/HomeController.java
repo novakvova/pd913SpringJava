@@ -34,7 +34,7 @@ public class HomeController {
     }
 
     @PostMapping("/create")
-    public Doctor index(CreateDoctorDto dto) throws Exception {
+    public Doctor create(@RequestBody CreateDoctorDto dto) throws Exception {
         String fileName = storageService.store(dto.getPhoto());
         Doctor doctor = doctorMapper.CreateDoctorToDoctor(dto);
         doctorRepository.save(doctor);
