@@ -11,4 +11,5 @@ public class AuthRequest {
     private String username;
     @NotNull
     private String password;
+    private String token;
 }
